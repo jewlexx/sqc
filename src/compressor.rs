@@ -49,7 +49,7 @@ impl Compressor {
             if buf[0] == buf[1] && !has_finished {
                 cb_count += 1;
             } else {
-                compressed.push_str(&format!("{}x{cb_count}", buf[0]));
+                compressed.push_str(&format!("{}x{cb_count}|", buf[0]));
                 cb_count = 1;
 
                 if has_finished {
@@ -91,7 +91,7 @@ mod tests {
 
         let compressed = compressor.compress().unwrap();
 
-        assert_eq!(compressed, format!("{}x100", COMPRESSED_CHAR as u8));
+        assert_eq!(compressed, format!("{}x100|", COMPRESSED_CHAR as u8));
     }
 
     #[test]
@@ -107,7 +107,7 @@ mod tests {
 
         assert_eq!(
             compressed,
-            format!("{}x2{}x1{}x3", 'a' as u8, 'x' as u8, 'b' as u8).repeat(10)
+            format!("{}x2|{}x1|{}x3|", 'a' as u8, 'x' as u8, 'b' as u8).repeat(10)
         );
     }
 }
