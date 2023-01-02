@@ -1,4 +1,5 @@
 mod compressor;
+mod decompressor;
 
 use std::io::Cursor;
 
