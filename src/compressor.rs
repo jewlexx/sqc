@@ -50,7 +50,7 @@ impl Compressor {
                 cb_count += 1;
             } else {
                 compressed.push_str(&format!("{}x{cb_count}", buf[0]));
-                cb_count = 0;
+                cb_count = 1;
 
                 if has_finished {
                     break;
@@ -92,5 +92,22 @@ mod tests {
         let compressed = compressor.compress().unwrap();
 
         assert_eq!(compressed, format!("{}x100", COMPRESSED_CHAR as u8));
+    }
+
+    #[test]
+    fn test_complex() {
+        let compress = "aaxbbb";
+        let to_compress = compress.repeat(10);
+
+        let to_compress_bytes = to_compress.as_bytes().to_vec();
+
+        let mut compressor = Compressor::new(Box::new(Cursor::new(to_compress_bytes)));
+
+        let compressed = compressor.compress().unwrap();
+
+        assert_eq!(
+            compressed,
+            format!("{}x2{}x1{}x3", 'a' as u8, 'x' as u8, 'b' as u8).repeat(10)
+        );
     }
 }
