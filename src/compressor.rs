@@ -1,7 +1,4 @@
-use std::{
-    fs::File,
-    io::{Read, Write},
-};
+use std::io::{Read, Write};
 
 pub struct Compressor<R> {
     reader: R,
@@ -63,7 +60,7 @@ impl<R: Read> Compressor<R> {
 
 #[cfg(test)]
 mod tests {
-    use std::io::{Cursor, Read};
+    use std::io::Cursor;
 
     use crate::compressor::Compressor;
 
