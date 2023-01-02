@@ -1,19 +1,14 @@
-use std::{fs::File, io::Read};
+use std::{
+    fs::File,
+    io::{Read, Write},
+};
 
-pub struct Compressor {
-    reader: Box<dyn Read>,
+pub struct Compressor<R> {
+    reader: R,
 }
 
-impl From<File> for Compressor {
-    fn from(file: File) -> Self {
-        Self {
-            reader: Box::new(file),
-        }
-    }
-}
-
-impl Compressor {
-    pub fn new(reader: Box<dyn Read>) -> Self {
+impl<R: Read> Compressor<R> {
+    pub fn new(reader: R) -> Self {
         Self { reader }
     }
 
@@ -25,10 +20,7 @@ impl Compressor {
     /// buffer, and continue to the next iteration of the loop
     /// In the next iteration of the loop, read the next byte from the file, and set the second
     /// byte in the buffer to it
-    pub fn compress(&mut self) -> std::io::Result<String> {
-        // The compressed bytes, represented as text
-        let mut compressed = String::new();
-
+    pub fn compress(&mut self, output: impl Write) -> std::io::Result<()> {
         let mut buf = [0u8; 2];
         // This tracks the number of times the current byte, held in position 0 of the buf
         // variable, is repeated and is reset to 0 whenever byte 2 does not match
@@ -49,7 +41,7 @@ impl Compressor {
             if buf[0] == buf[1] && !has_finished {
                 cb_count += 1;
             } else {
-                compressed.push_str(&format!("{}x{cb_count}|", buf[0]));
+                write!(output, "{}x{cb_count}|", buf[0])?;
                 cb_count = 1;
 
                 if has_finished {
@@ -65,7 +57,7 @@ impl Compressor {
             }
         }
 
-        Ok(compressed)
+        Ok(())
     }
 }
 
@@ -87,7 +79,7 @@ mod tests {
 
         let to_compress_bytes = to_compress.as_bytes().to_vec();
 
-        let mut compressor = Compressor::new(Box::new(Cursor::new(to_compress_bytes)));
+        let mut compressor = Compressor::new(Cursor::new(to_compress_bytes));
 
         let compressed = compressor.compress().unwrap();
 
@@ -101,7 +93,7 @@ mod tests {
 
         let to_compress_bytes = to_compress.as_bytes().to_vec();
 
-        let mut compressor = Compressor::new(Box::new(Cursor::new(to_compress_bytes)));
+        let mut compressor = Compressor::new(Cursor::new(to_compress_bytes));
 
         let compressed = compressor.compress().unwrap();
 

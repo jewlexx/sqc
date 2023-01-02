@@ -3,3 +3,7 @@ pub struct Decompressor {
     // memory limits
     compressed: String,
 }
+
+// Test if mem size of Read.iter() is bearable with large Read
+
+impl Decompressor {}
