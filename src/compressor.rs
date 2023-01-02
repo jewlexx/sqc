@@ -20,7 +20,7 @@ impl<R: Read> Compressor<R> {
     /// buffer, and continue to the next iteration of the loop
     /// In the next iteration of the loop, read the next byte from the file, and set the second
     /// byte in the buffer to it
-    pub fn compress(&mut self, output: impl Write) -> std::io::Result<()> {
+    pub fn compress(&mut self, mut output: impl Write) -> std::io::Result<()> {
         let mut buf = [0u8; 2];
         // This tracks the number of times the current byte, held in position 0 of the buf
         // variable, is repeated and is reset to 0 whenever byte 2 does not match
@@ -41,7 +41,7 @@ impl<R: Read> Compressor<R> {
             if buf[0] == buf[1] && !has_finished {
                 cb_count += 1;
             } else {
-                write!(output, "{}x{cb_count}|", buf[0])?;
+                writeln!(output, "{}x{cb_count}", buf[0])?;
                 cb_count = 1;
 
                 if has_finished {
@@ -63,7 +63,7 @@ impl<R: Read> Compressor<R> {
 
 #[cfg(test)]
 mod tests {
-    use std::io::Cursor;
+    use std::io::{Cursor, Read};
 
     use crate::compressor::Compressor;
 
@@ -81,9 +81,13 @@ mod tests {
 
         let mut compressor = Compressor::new(Cursor::new(to_compress_bytes));
 
-        let compressed = compressor.compress().unwrap();
+        let mut compressed = Vec::new();
+        compressor.compress(&mut compressed).unwrap();
 
-        assert_eq!(compressed, format!("{}x100|", COMPRESSED_CHAR as u8));
+        assert_eq!(
+            compressed,
+            format!("{}x100\n", COMPRESSED_CHAR as u8).as_bytes()
+        );
     }
 
     #[test]
@@ -95,11 +99,14 @@ mod tests {
 
         let mut compressor = Compressor::new(Cursor::new(to_compress_bytes));
 
-        let compressed = compressor.compress().unwrap();
+        let mut compressed = Vec::new();
+        compressor.compress(&mut compressed).unwrap();
 
         assert_eq!(
             compressed,
-            format!("{}x2|{}x1|{}x3|", 'a' as u8, 'x' as u8, 'b' as u8).repeat(10)
+            format!("{}x2\n{}x1\n{}x3\n", 'a' as u8, 'x' as u8, 'b' as u8)
+                .repeat(10)
+                .as_bytes()
         );
     }
 }
