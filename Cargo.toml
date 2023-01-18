@@ -1,5 +1,7 @@
 [package]
 name = "seqcompress"
+description = "A toy compression algorithm that combines sequences of bytes into smaller strings"
+repository = "https://github.com/jewlexx/sqc"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
