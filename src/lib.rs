@@ -21,3 +21,21 @@ pub fn decompress(compressed: impl BufRead, output: impl Write) -> std::io::Resu
 
     Ok(())
 }
+
+#[no_mangle]
+pub fn compress_bytes(to_compress: &[u8]) -> std::io::Result<Vec<u8>> {
+    let mut output = vec![];
+
+    compress(to_compress, &mut output)?;
+
+    Ok(output)
+}
+
+#[no_mangle]
+pub fn decompress_bytes(compressed: &[u8]) -> std::io::Result<Vec<u8>> {
+    let mut output = vec![];
+
+    decompress(compressed, &mut output)?;
+
+    Ok(output)
+}
