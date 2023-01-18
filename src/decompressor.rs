@@ -1,4 +1,4 @@
-use std::io::{Read, Write};
+use std::io::{BufRead, Write};
 
 pub struct Decompressor<R> {
     compressed: R,
@@ -6,7 +6,7 @@ pub struct Decompressor<R> {
 
 // TODO: Ensure memory won't be an issue with larger files
 
-impl<R: Read> Decompressor<R> {
+impl<R: BufRead> Decompressor<R> {
     pub fn new(compressed: R) -> Self {
         Self { compressed }
     }

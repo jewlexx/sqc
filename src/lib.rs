@@ -1,7 +1,7 @@
 mod compressor;
 mod decompressor;
 
-use std::io::{Read, Write};
+use std::io::{BufRead, Read, Write};
 
 pub use compressor::Compressor;
 pub use decompressor::Decompressor;
@@ -14,10 +14,10 @@ pub fn compress(compress: impl Read, output: impl Write) -> std::io::Result<()> 
     Ok(())
 }
 
-pub fn decompress(compressed: impl Read, output: impl Write) -> std::io::Result<()> {
-    let mut decompressor = Decompressor::new(compressed);
+pub fn decompress(compressed: impl BufRead, output: impl Write) -> std::io::Result<()> {
+    let decompressor = Decompressor::new(compressed);
 
-    decompressor.decompress(output);
+    decompressor.decompress(output)?;
 
     Ok(())
 }
