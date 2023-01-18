@@ -21,7 +21,7 @@ impl<R: Read> Compressor<R> {
         let mut buf = [0u8; 2];
         // This tracks the number of times the current byte, held in position 0 of the buf
         // variable, is repeated and is reset to 0 whenever byte 2 does not match
-        let mut cb_count: u128 = 1;
+        let mut cb_count: usize = 1;
         // This exists purely to temporarily hold the upcoming byte in the buffer
         // This will take up 1 byte in memory for the lifetime of the function, while remaining
         // redundant for most of it :)
@@ -35,7 +35,7 @@ impl<R: Read> Compressor<R> {
         let mut has_finished = false;
 
         loop {
-            if buf[0] == buf[1] && !has_finished {
+            if buf[0] == buf[1] && !has_finished && cb_count <= usize::MAX {
                 cb_count += 1;
             } else {
                 writeln!(output, "{}x{cb_count}", buf[0])?;
@@ -60,23 +60,21 @@ impl<R: Read> Compressor<R> {
 
 #[cfg(test)]
 mod tests {
-    use std::io::Cursor;
-
     use crate::compressor::Compressor;
 
     #[test]
     fn test_compress() {
         const COMPRESSED_CHAR: char = 'a';
 
-        let to_compress = {
+        let compress = {
             let char_string = COMPRESSED_CHAR.to_string();
 
             char_string.repeat(100)
         };
 
-        let to_compress_bytes = to_compress.as_bytes().to_vec();
+        let compress_bytes = compress.as_bytes();
 
-        let mut compressor = Compressor::new(Cursor::new(to_compress_bytes));
+        let mut compressor = Compressor::new(compress_bytes);
 
         let mut compressed = Vec::new();
         compressor.compress(&mut compressed).unwrap();
@@ -89,12 +87,11 @@ mod tests {
 
     #[test]
     fn test_complex() {
-        let compress = "aaxbbb";
-        let to_compress = compress.repeat(10);
+        let compress = "aaxbbb".repeat(10);
 
-        let to_compress_bytes = to_compress.as_bytes().to_vec();
+        let compress_bytes = compress.as_bytes();
 
-        let mut compressor = Compressor::new(Cursor::new(to_compress_bytes));
+        let mut compressor = Compressor::new(compress_bytes);
 
         let mut compressed = Vec::new();
         compressor.compress(&mut compressed).unwrap();
